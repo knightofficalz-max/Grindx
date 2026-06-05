@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>GRINDX — No Internet</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="offline-wrap">
+    <div class="offline-icon"><i class="fas fa-wifi-slash"></i></div>
+    <div class="offline-title">No Internet Connection</div>
+    <div class="offline-desc">Please check your network settings and try again.</div>
+    <button class="btn btn-primary" onclick="window.location.reload()"><i class="fas fa-refresh"></i> Retry</button>
+  </div>
+  <script>window.addEventListener('online', () => { window.location.reload(); });</script>
+</body>
+</html>

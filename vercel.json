@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "routes": [
+    { "src": "/", "dest": "/user/index.html" },
+    { "src": "/user/(.*)", "dest": "/user/$1" },
+    { "src": "/admin/(.*)", "dest": "/admin/$1" },
+    { "src": "/api/otp",              "dest": "/api/otp.js" },
+    { "src": "/api/zapupi-order",     "dest": "/api/zapupi-order.js" },
+    { "src": "/api/zapupi-webhook",   "dest": "/api/zapupi-webhook.js" },
+    { "src": "/api/google-auth",      "dest": "/api/google-auth.js" },
+    { "src": "/api/withdraw",         "dest": "/api/withdraw.js" }
+  ]
+}

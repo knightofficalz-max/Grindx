@@ -1,0 +1,148 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "users": {
+      "$uid": {
+        ".read": "$uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true",
+        ".write": "$uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true",
+        ".validate": "newData.hasChildren(['uid','name','username','email'])"
+      }
+    },
+
+    "tournaments": {
+      ".read": "auth !== null",
+      ".write": "root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    },
+
+    "joinedTours": {
+      "$uid": {
+        ".read": "$uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true",
+        ".write": "$uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true"
+      }
+    },
+
+    "transactions": {
+      ".read": "root.child('users').child(auth.uid).child('isAdmin').val() === true",
+      ".write": "root.child('users').child(auth.uid).child('isAdmin').val() === true",
+      "$txnId": {
+        ".read": "data.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true"
+      }
+    },
+
+    "depositRequests": {
+      ".write": false,
+      "$orderId": {
+        ".read": "data.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true",
+        ".write": false
+      }
+    },
+
+    "userTransactions": {
+      "$uid": {
+        ".read": "$uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true",
+        ".write": "root.child('users').child(auth.uid).child('isAdmin').val() === true"
+      }
+    },
+
+    "withdrawals": {
+      ".read": "root.child('users').child(auth.uid).child('isAdmin').val() === true",
+      ".write": "root.child('users').child(auth.uid).child('isAdmin').val() === true",
+      "$wdId": {
+        ".read": "data.child('userId').val() === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true"
+      }
+    },
+
+    "notifications": {
+      "$uid": {
+        ".read": "$uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true",
+        ".write": "$uid === auth.uid || root.child('users').child(auth.uid).child('isAdmin').val() === true"
+      }
+    },
+
+    "banners": {
+      ".read": "auth !== null",
+      ".write": "root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    },
+
+    "notes": {
+      ".read": "auth !== null",
+      ".write": "root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    },
+
+    "games": {
+      ".read": "auth !== null",
+      ".write": "root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    },
+
+    "modes": {
+      ".read": "auth !== null",
+      ".write": "root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    },
+
+    "settings": {
+      ".read": "auth !== null",
+      ".write": "root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    },
+
+    "siteStats": {
+      ".read": true,
+      ".write": "root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    },
+
+    "tutorials": {
+      ".read": "auth !== null",
+      ".write": "root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    },
+
+    "otps": {
+      ".read": false,
+      ".write": false
+    },
+
+    "ldCooldown": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    },
+
+    "ldHistory": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    },
+
+    "disputes": {
+      ".read": "root.child('users').child(auth.uid).child('isAdmin').val() === true",
+      ".write": "auth !== null"
+    },
+
+    "adminLogs": {
+      ".read": "root.child('users').child(auth.uid).child('isAdmin').val() === true",
+      ".write": "root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    },
+
+    "sentNotifications": {
+      ".read": "root.child('users').child(auth.uid).child('isAdmin').val() === true",
+      ".write": "root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    },
+
+    "faq": {
+      ".read": "auth !== null",
+      ".write": "root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    },
+
+    "promotions": {
+      ".read": "auth !== null",
+      ".write": "root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    },
+
+    "luckyDrawPrizes": {
+      ".read": "auth !== null",
+      ".write": "root.child('users').child(auth.uid).child('isAdmin').val() === true"
+    }
+  }
+}

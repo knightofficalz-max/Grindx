@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <title>GRINDX — Esports Tournament Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+</head>
+<body>
+  <div id="app">
+    <!-- Login screen -->
+    <div id="login" class="screen active">
+      <div class="auth-wrap">
+        <div class="auth-logo"><div class="auth-logo-txt">GRINDX</div><div class="auth-logo-sub"><i class="fas fa-gamepad"></i> PLAY · EARN · DOMINATE</div></div>
+        <div class="auth-card">
+          <div class="auth-tabs">
+            <div class="auth-tab active" data-action="switchAuthTab" data-tab="login">Login</div>
+            <div class="auth-tab" data-action="switchAuthTab" data-tab="signup">Sign Up</div>
+          </div>
+          <div data-auth-form="login">
+            <div class="form-group"><label class="form-label">Email</label><input class="form-control" id="lEmail" type="email" placeholder="you@example.com" autocomplete="email"></div>
+            <div class="form-group"><label class="form-label">Password</label><div class="input-with-btn"><input class="form-control" id="lPass" type="password" placeholder="••••••••" autocomplete="current-password"><button class="btn btn-outline btn-sm" type="button" data-action="togglePass" data-target="lPass"><i class="fas fa-eye"></i></button></div></div>
+            <div style="text-align:right;margin-bottom:16px"><span style="font-size:12px;color:var(--primary);cursor:pointer" data-action="nav" data-screen="forgot">Forgot password?</span></div>
+            <button class="btn btn-primary btn-full" data-action="doLogin"><i class="fas fa-sign-in-alt"></i> Login</button>
+            <div class="divider">or</div>
+            <button class="google-btn" data-action="doGoogleLogin"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G"> Continue with Google</button>
+          </div>
+          <div data-auth-form="signup" style="display:none">
+            <div class="form-row"><div class="form-group"><label class="form-label">First Name</label><input class="form-control" id="rFirst" placeholder="Rahul"></div><div class="form-group"><label class="form-label">Last Name</label><input class="form-control" id="rLast" placeholder="Singh"></div></div>
+            <div class="form-group"><label class="form-label">Username</label><input class="form-control" id="rUser" placeholder="rahul_grindx" oninput="this.value=this.value.replace(/[^a-zA-Z0-9_]/g,'').toLowerCase()"></div>
+            <div class="form-group"><label class="form-label">Email</label><input class="form-control" id="rEmail" type="email" placeholder="you@example.com"></div>
+            <div class="form-group"><label class="form-label">Phone</label><input class="form-control" id="rPhone" type="tel" placeholder="9876543210" maxlength="10"></div>
+            <div class="form-group"><label class="form-label">Password</label><div class="input-with-btn"><input class="form-control" id="rPass" type="password" placeholder="min 6 characters" autocomplete="new-password"><button class="btn btn-outline btn-sm" type="button" data-action="togglePass" data-target="rPass"><i class="fas fa-eye"></i></button></div></div>
+            <div class="form-group"><label class="form-label">Referral Code (Optional)</label><input class="form-control" id="rRefCode" placeholder="GX123ABC" style="text-transform:uppercase"></div>
+            <button class="btn btn-primary btn-full" data-action="doSignup"><i class="fas fa-user-plus"></i> Create Account</button>
+            <div class="divider">or</div>
+            <button class="google-btn" data-action="doGoogleLogin"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G"> Sign up with Google</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Forgot screen -->
+    <div id="forgot" class="screen">
+      <div class="header"><div class="h-left"><div class="h-back" data-action="nav" data-screen="login"><i class="fas fa-arrow-left"></i></div><span style="font-size:17px;font-weight:700">Reset Password</span></div></div>
+      <div style="padding:30px 20px">
+        <p style="color:var(--txt2);margin-bottom:24px;font-size:14px">Enter your registered email. We'll send a reset link.</p>
+        <div class="form-group"><label class="form-label">Email</label><input class="form-control" id="forgotEmail" type="email" placeholder="you@example.com"></div>
+        <button class="btn btn-primary btn-full" data-action="resetPassword"><i class="fas fa-paper-plane"></i> Send Reset Link</button>
+        <button class="btn btn-outline btn-full mt12" data-action="nav" data-screen="login">Back to Login</button>
+      </div>
+    </div>
+
+    <!-- Google complete screen -->
+    <div id="googleComplete" class="screen">
+      <div class="header"><div class="h-left"><div class="h-logo">GRINDX</div></div></div>
+      <div style="padding:24px 20px">
+        <h2 style="margin-bottom:6px">Complete Your Profile</h2>
+        <p style="color:var(--txt2);font-size:13px;margin-bottom:24px">One last step before you grind <i class="fas fa-gamepad"></i></p>
+        <div class="form-group"><label class="form-label">Username</label><input class="form-control" id="gcUser" placeholder="cool_player123" oninput="this.value=this.value.replace(/[^a-zA-Z0-9_]/g,'').toLowerCase()"></div>
+        <div class="form-group"><label class="form-label">Phone</label><input class="form-control" id="gcPhone" type="tel" placeholder="9876543210" maxlength="10"></div>
+        <div class="form-group"><label class="form-label">Referral Code (Optional)</label><input class="form-control" id="gcRef" placeholder="GX123ABC" style="text-transform:uppercase"></div>
+        <button class="btn btn-primary btn-full" data-action="completeGoogleProfile"><i class="fas fa-check"></i> Let's Grind!</button>
+      </div>
+    </div>
+
+    <!-- Home screen -->
+    <div id="home" class="screen">
+      <div class="header">
+        <div class="h-left"><div class="h-logo">GRINDX</div></div>
+        <div class="h-right">
+          <div class="notif-btn" data-action="nav" data-screen="notifications"><i class="fas fa-bell"></i><div class="notif-badge" id="notifBadge">0</div></div>
+          <div class="wal-pill" data-action="nav" data-screen="wallet"><i class="fas fa-wallet wal-pill-ico"></i><span id="headerBal">₹0</span></div>
+        </div>
+      </div>
+      <div class="banner-wrap" id="bannerWrap"><div class="banner-slide active" style="background:var(--card-lt);display:flex;align-items:center;justify-content:center;color:var(--txt3)"><i class="fas fa-image" style="font-size:40px"></i></div></div>
+      <div class="notes-ticker"><span class="notes-label"><i class="fas fa-bullhorn"></i> NOTICE</span><span class="notes-txt" id="notesTxt">Welcome to GRINDX! Loading...</span></div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-val" id="statPlayers">0</div><div class="stat-lbl">Players</div></div>
+        <div class="stat-card"><div class="stat-val" id="statTournaments">0</div><div class="stat-lbl">Matches</div></div>
+        <div class="stat-card"><div class="stat-val" id="statPrize">₹0</div><div class="stat-lbl">Paid Out</div></div>
+      </div>
+      <div style="padding:0 16px;margin-bottom:10px"><div class="section-title"><span><i class="fas fa-gamepad"></i></span> Select Game</div></div>
+      <div class="games-grid" id="gamesRow"></div>
+      <div style="height:24px"></div>
+    </div>
+
+    <!-- Modes screen -->
+    <div id="modes" class="screen">
+      <div class="header"><div class="h-left"><div class="h-back" data-action="nav" data-screen="home"><i class="fas fa-arrow-left"></i></div><span id="modeGameTitle">Select Mode</span></div></div>
+      <div class="mode-grid" id="modesGrid"></div>
+    </div>
+
+    <!-- Game-tournaments screen -->
+    <div id="game-tournaments" class="screen">
+      <div class="header"><div class="h-left"><div class="h-back" data-action="nav" data-screen="modes"><i class="fas fa-arrow-left"></i></div><span id="tourPageTitle">Tournaments</span></div></div>
+      <div style="padding:12px 0 0">
+        <div class="filter-tabs">
+          <div class="ftab active" data-action="filterTours" data-filter="all">All</div>
+          <div class="ftab" data-action="filterTours" data-filter="solo">Solo</div>
+          <div class="ftab" data-action="filterTours" data-filter="duo">Duo</div>
+          <div class="ftab" data-action="filterTours" data-filter="squad">Squad</div>
+        </div>
+        <div id="toursListWrap" style="padding:0 16px"></div>
+      </div>
+    </div>
+
+    <!-- Tournament details screen -->
+    <div id="tournament-details" class="screen">
+      <div class="header"><div class="h-left"><div class="h-back" data-action="nav" data-screen="game-tournaments"><i class="fas fa-arrow-left"></i></div><span style="font-size:17px;font-weight:700">Tournament Details</span></div></div>
+      <div id="tourDetailInner"></div>
+    </div>
+
+    <!-- Wallet screen -->
+    <div id="wallet" class="screen">
+      <div class="header"><div class="h-left"><div class="h-logo">GRINDX</div></div><div class="h-right"><div class="notif-btn" data-action="nav" data-screen="notifications"><i class="fas fa-bell"></i><div class="notif-badge" id="notifBadge2">0</div></div></div></div>
+      <div class="wallet-total"><div class="wallet-total-lbl">Total Balance</div><div class="wallet-total-val" id="walTotalBal">₹0.00</div></div>
+      <div class="wallet-bal-grid">
+        <div class="bal-card"><div class="bal-icon"><i class="fas fa-credit-card"></i></div><div class="bal-val" id="walDeposit">₹0</div><div class="bal-lbl">Main</div></div>
+        <div class="bal-card"><div class="bal-icon"><i class="fas fa-trophy"></i></div><div class="bal-val" id="walWinning">₹0</div><div class="bal-lbl">Winning</div></div>
+        <div class="bal-card"><div class="bal-icon"><i class="fas fa-gift"></i></div><div class="bal-val" id="walBonus">₹0</div><div class="bal-lbl">Bonus</div></div>
+      </div>
+      <div class="wallet-actions">
+        <button class="btn btn-primary" style="flex:1" data-action="openAddMoneyModal"><i class="fas fa-plus"></i> Add Cash</button>
+        <button class="btn btn-outline" style="flex:1" data-action="openWithdrawModal"><i class="fas fa-arrow-up"></i> Withdraw</button>
+      </div>
+      <div style="padding:0 16px;margin-bottom:10px"><div class="section-title"><span><i class="fas fa-list"></i></span> Recent Transactions</div></div>
+      <div style="display:flex;gap:8px;margin:0 16px 12px">
+        <div class="ftab active btn-sm" data-action="filterTxns" data-filter="all">All</div>
+        <div class="ftab btn-sm" data-action="filterTxns" data-filter="deposit">Deposits</div>
+        <div class="ftab btn-sm" data-action="filterTxns" data-filter="withdrawal">Withdrawals</div>
+        <div class="ftab btn-sm" data-action="filterTxns" data-filter="tournament">Games</div>
+      </div>
+      <div id="txnList"><div class="empty-state"><i class="fas fa-receipt"></i><p>No transactions yet</p></div></div>
+    </div>
+
+    <!-- Leaderboard screen -->
+    <div id="leaderboard" class="screen">
+      <div class="header"><div class="h-left"><div class="h-logo">GRINDX</div></div></div>
+      <div class="page-title mb12"><i class="fas fa-trophy"></i> Leaderboard</div>
+      <div style="padding:0 16px 8px">
+        <div class="lb-tabs">
+          <div class="lb-tab active" data-action="switchLB" data-type="winning">Winning</div>
+          <div class="lb-tab" data-action="switchLB" data-type="referral">Referral</div>
+        </div>
+        <div class="lb-tabs" id="lbPeriodTabs" style="margin-bottom:0">
+          <div class="lb-tab active" data-action="switchLBPeriod" data-period="lifetime">Lifetime</div>
+          <div class="lb-tab" data-action="switchLBPeriod" data-period="monthly">Monthly</div>
+          <div class="lb-tab" data-action="switchLBPeriod" data-period="weekly">Weekly</div>
+        </div>
+      </div>
+      <div id="lbList" style="margin-top:12px"><div class="empty-state"><i class="fas fa-trophy"></i><p>Loading...</p></div></div>
+    </div>
+
+    <!-- Earn screen -->
+    <div id="earn" class="screen">
+      <div class="header"><div class="h-left"><div class="h-logo">GRINDX</div></div></div>
+      <div class="page-title mb12"><i class="fas fa-coins"></i> Earn</div>
+      <div class="earn-banner" id="earnBannerWrap"><div style="width:100%;height:100%;background:var(--card-lt);display:flex;align-items:center;justify-content:center;color:var(--txt3)"><i class="fas fa-image" style="font-size:30px"></i></div></div>
+      <div class="earn-cards">
+        <div class="earn-card" data-action="nav" data-screen="referral"><i class="fas fa-users" style="color:var(--primary)"></i><div class="earn-card-title">Refer & Earn</div><div class="earn-card-sub" id="refEarnSub">Earn ₹50 per referral</div></div>
+        <div class="earn-card" data-action="nav" data-screen="luckyDraw"><i class="fas fa-dice" style="color:var(--warn)"></i><div class="earn-card-title">Lucky Draw</div><div class="earn-card-sub">Spin to win prizes!</div></div>
+        <div class="earn-card" data-action="nav" data-screen="leaderboard"><i class="fas fa-crown" style="color:#f59e0b"></i><div class="earn-card-title">Leaderboard</div><div class="earn-card-sub">Rank up & win</div></div>
+        <div class="earn-card" data-action="nav" data-screen="promos"><i class="fas fa-tag" style="color:var(--info)"></i><div class="earn-card-title">Promotions</div><div class="earn-card-sub">Special offers</div></div>
+      </div>
+    </div>
+
+    <!-- Profile screen -->
+    <div id="profile" class="screen">
+      <div class="header"><div class="h-left"><div class="h-logo">GRINDX</div></div></div>
+      <div class="profile-hero">
+        <div class="profile-av" id="profileAv" data-action="nav" data-screen="editProfile"><span id="profileAvLetter">?</span></div>
+        <div class="profile-name" id="profileName">Loading...</div>
+        <div class="profile-id" id="profileId">ID: —</div>
+      </div>
+      <div class="profile-stats">
+        <div class="pstat"><div class="pstat-val" id="pStatMatches">0</div><div class="pstat-lbl">Matches</div></div>
+        <div class="pstat"><div class="pstat-val" id="pStatWon">0</div><div class="pstat-lbl">Won</div></div>
+        <div class="pstat"><div class="pstat-val" id="pStatEarned">₹0</div><div class="pstat-lbl">Earned</div></div>
+      </div>
+      <div class="profile-menu">
+        <div class="pm-item" data-action="nav" data-screen="editProfile"><div class="pm-icon" style="background:rgba(124,58,237,.15);color:var(--secondary-lt)"><i class="fas fa-user-edit"></i></div><div class="pm-label">Edit Profile</div><i class="fas fa-chevron-right pm-arrow"></i></div>
+        <div class="pm-item" data-action="nav" data-screen="wallet"><div class="pm-icon" style="background:rgba(74,222,128,.12);color:var(--primary)"><i class="fas fa-wallet"></i></div><div class="pm-label">My Wallet</div><i class="fas fa-chevron-right pm-arrow"></i></div>
+        <div class="pm-item" data-action="nav" data-screen="my-matches"><div class="pm-icon" style="background:rgba(96,165,250,.12);color:var(--info)"><i class="fas fa-gamepad"></i></div><div class="pm-label">My Matches</div><i class="fas fa-chevron-right pm-arrow"></i></div>
+        <div class="pm-item" data-action="nav" data-screen="referral"><div class="pm-icon" style="background:rgba(251,191,36,.1);color:var(--warn)"><i class="fas fa-users"></i></div><div class="pm-label">My Referral</div><i class="fas fa-chevron-right pm-arrow"></i></div>
+        <div class="pm-item" data-action="nav" data-screen="announcements"><div class="pm-icon" style="background:rgba(248,113,113,.12);color:var(--accent)"><i class="fas fa-bullhorn"></i></div><div class="pm-label">Announcements</div><i class="fas fa-chevron-right pm-arrow"></i></div>
+        <div class="pm-item" data-action="nav" data-screen="support"><div class="pm-icon" style="background:rgba(74,222,128,.08);color:var(--primary)"><i class="fas fa-headset"></i></div><div class="pm-label">Customer Support</div><i class="fas fa-chevron-right pm-arrow"></i></div>
+        <div class="pm-item" data-action="nav" data-screen="tutorials"><div class="pm-icon" style="background:rgba(96,165,250,.1);color:var(--info)"><i class="fas fa-play-circle"></i></div><div class="pm-label">App Tutorials</div><i class="fas fa-chevron-right pm-arrow"></i></div>
+        <div class="pm-item" data-action="nav" data-screen="followUs"><div class="pm-icon" style="background:rgba(251,191,36,.1);color:var(--warn)"><i class="fas fa-share-nodes"></i></div><div class="pm-label">Follow Us</div><i class="fas fa-chevron-right pm-arrow"></i></div>
+        <div class="pm-item" data-action="nav" data-screen="legal"><div class="pm-icon" style="background:rgba(161,161,170,.1);color:var(--txt2)"><i class="fas fa-shield-halved"></i></div><div class="pm-label">Legal & Privacy</div><i class="fas fa-chevron-right pm-arrow"></i></div>
+        <div class="pm-item" data-action="doLogout"><div class="pm-icon" style="background:rgba(248,113,113,.12);color:var(--accent)"><i class="fas fa-right-from-bracket"></i></div><div class="pm-label" style="color:var(--accent)">Logout</div><i class="fas fa-chevron-right pm-arrow"></i></div>
+      </div>
+    </div>
+
+    <!-- Notifications screen -->
+    <div id="notifications" class="screen">
+      <div class="header"><div class="h-left"><div class="h-back" data-action="nav" data-screen="home"><i class="fas fa-arrow-left"></i></div><span style="font-size:17px;font-weight:700">Notifications</span></div><div class="h-right"><span style="font-size:12px;color:var(--primary);cursor:pointer" data-action="markAllRead">Mark all read</span></div></div>
+      <div id="notifList"><div class="empty-state"><i class="fas fa-bell-slash"></i><p>No notifications</p></div></div>
+    </div>
+
+    <!-- My-matches screen -->
+    <div id="my-matches" class="screen">
+      <div class="header"><div class="h-left"><div class="h-back" data-action="nav" data-screen="profile"><i class="fas fa-arrow-left"></i></div><span style="font-size:17px;font-weight:700">My Matches</span></div></div>
+      <div style="padding:12px 0">
+        <div class="filter-tabs">
+          <div class="ftab active" data-action="showMatches" data-filter="all">All</div>
+          <div class="ftab" data-action="showMatches" data-filter="upcoming">Upcoming</div>
+          <div class="ftab" data-action="showMatches" data-filter="completed">Completed</div>
+        </div>
+        <div id="matchesList" style="padding:0 16px"><div class="empty-state"><i class="fas fa-gamepad"></i><p>No matches yet</p></div></div>
+      </div>
+    </div>
+
+    <!-- Referral screen -->
+    <div id="referral" class="screen">
+      <div class="header"><div class="h-left"><div class="h-back" data-action="nav" data-screen="earn"><i class="fas fa-arrow-left"></i></div><span style="font-size:17px;font-weight:700">Refer & Earn</span></div></div>
+      <div style="padding:20px 16px 0">
+        <div style="background:var(--grad);border-radius:var(--r);padding:20px;text-align:center;margin-bottom:20px"><div style="font-size:13px;font-weight:600;margin-bottom:4px">You Earn</div><div style="font-family:'Rajdhani',sans-serif;font-size:36px;font-weight:700" id="refEarnAmt">₹50</div><div style="font-size:12px;opacity:.8">per referral (after first deposit)</div><div style="margin-top:8px;font-size:12px;opacity:.8">Friend gets: <b id="refFriendAmt">₹25</b></div></div>
+        <div class="ref-info-grid"><div class="ref-info-card"><div class="ref-info-val" id="refCount">0</div><div class="ref-info-lbl">Total Referrals</div></div><div class="ref-info-card"><div class="ref-info-val" id="refEarned">₹0</div><div class="ref-info-lbl">Total Earned</div></div></div>
+        <div class="ref-code-box"><div style="font-size:12px;color:var(--txt3);margin-bottom:4px">Your Referral Code</div><div class="ref-code-val" id="refCodeDisp">GX0000</div><button class="btn btn-outline btn-sm" style="margin:0 auto" data-action="copyRefCode"><i class="fas fa-copy"></i> Copy Code</button></div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:10px">Share via</div>
+        <div class="ref-share-grid">
+          <div class="ref-share-btn" data-action="shareRef" data-platform="whatsapp"><i class="fab fa-whatsapp" style="color:#25d366"></i>WhatsApp</div>
+          <div class="ref-share-btn" data-action="shareRef" data-platform="telegram"><i class="fab fa-telegram" style="color:#2ca5e0"></i>Telegram</div>
+          <div class="ref-share-btn" data-action="shareRef" data-platform="twitter"><i class="fab fa-x-twitter" style="color:#fff"></i>X (Twitter)</div>
+          <div class="ref-share-btn" data-action="shareRef" data-platform="copy"><i class="fas fa-link" style="color:var(--primary)"></i>Copy Link</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lucky Draw screen -->
+    <div id="luckyDraw" class="screen">
+      <div class="header"><div class="h-left"><div class="h-back" data-action="nav" data-screen="earn"><i class="fas fa-arrow-left"></i></div><span style="font-size:17px;font-weight:700">Lucky Draw <i class="fas fa-slot-machine"></i></span></div></div>
+      <div style="padding:24px 16px;text-align:center">
+        <div class="ld-wheel-wrap"><div class="ld-pointer"><i class="fas fa-caret-down"></i></div><canvas id="ldCanvas" width="260" height="260" class="ld-wheel"></canvas></div>
+        <div style="margin:20px 0 16px"><div style="font-size:13px;color:var(--txt3)" id="ldCooldownTxt">1 free spin per 24 hours</div><div style="font-size:13px;color:var(--txt3);display:none" id="ldTimerTxt"></div></div>
+        <button class="btn btn-primary" style="min-width:160px" id="ldSpinBtn" data-action="spinWheel"><i class="fas fa-dice"></i> SPIN</button>
+        <div style="margin-top:24px;text-align:left"><div class="section-title"><span><i class="fas fa-scroll"></i></span> Spin History</div><div id="ldHistory"></div></div>
+      </div>
+    </div>
+
+    <!-- Promos screen -->
+    <div id="promos" class="screen">
+      <div class="header"><div class="h-left"><div class="h-back" data-action="nav" data-screen="earn"><i class="fas fa-arrow-left"></i></div><span style="font-size:17px;font-weight:700">Promotions</span></div></div>
+      <div id="promoList" style="padding:16px"><div class="empty-state"><i class="fas fa-tag"></i><p>No active promotions</p></div></div>
+    </div>
+
+    <!-- Announcements screen -->
+    <div id="announcements" class="screen">
+      <div class="header"><div class="h-left"><div class="h-back" data-action="nav" data-screen="profile"><i class="fas fa-arrow-left"></i></div><span style="font-size:17px;font-weight:700">Announcements</span></div></div>
+      <div id="annList" style="padding:16px"><div class="empty-state"><i class="fas fa-bullhorn"></i><p>No announcements</p></div></div>
+    </div>
+
+    <!-- Support screen -->
+    <div id="support" class="screen">
+      <div class="header"><div class="h-left"><div class="h-back" data-action="nav" data-screen="profile"><i class="fas fa-arrow-left"></i></div><span style="font-size:17px;font-weight:700">Support</span></div></div>
+      <div style="padding:16px">
+        <div class="support-card" data-action="openWA"><div class="pm-icon" style="background:rgba(37,211,102,.12);color:#25d366;width:44px;height:44px"><i class="fab fa-whatsapp" style="font-size:20px"></i></div><div style="flex:1"><div style="font-weight:700">WhatsApp Support</div><div style="font-size:12px;color:var(--txt3)">Chat with us on WhatsApp</div></div><i class="fas fa-chevron-right" style="color:var(--txt3)"></i></div>
+        <div class="support-card" data-action="openEmail"><div class="pm-icon" style="background:rgba(96,165,250,.12);color:var(--info);width:44px;height:44px"><i class="fas fa-envelope" style="font-size:20px"></i></div><div style="flex:1"><div style="font-weight:700">Email Support</div><div style="font-size:12px;color:var(--txt3)" id="supportEmail">support@grindx.in</div></div><i class="fas fa-chevron-right" style="color:var(--txt3)"></i></div>
+        <div class="support-card" data-action="nav" data-screen="faq"><div class="pm-icon" style="background:rgba(251,191,36,.1);color:var(--warn);width:44px;height:44px"><i class="fas fa-circle-question" style="font-size:20px"></i></div><div style="flex:1"><div style="font-weight:700">FAQ</div><div style="font-size:12px;color:var(--txt3)">Frequently asked questions</div></div><i class="fas fa-chevron-right" style="color:var(--txt3)"></i></div>
+        <div style="margin-top:20px"><div class="section-title"><span><i class="fas fa-exclamation-triangle"></i></span> Report an Issue</div><div class="form-group"><label class="form-label">Tournament ID (if any)</label><input class="form-control" id="dispTourId" placeholder="Optional"></div><div class="form-group"><label class="form-label">Issue Description</label><textarea class="form-control" id="dispMsg" rows="4" placeholder="Describe your issue..."></textarea></div><button class="btn btn-primary btn-full" data-action="submitDispute"><i class="fas fa-paper-plane"></i> Submit</button></div>
+      </div>
+    </div>
+
+    <!-- FAQ screen -->
+    <div id="faq" class="screen">
+      <div class="header"><div class="h-left"><div class="h-back" data-action="nav" data-screen="support"><i class="fas fa-arrow-left"></i></div><span style="font-size:17px;font-weight:700">FAQ</span></div></div>
+      <div id="faqList" style="padding:16px"></div>
+    </div>
+
+    <!-- Tutorials screen -->
+    <div id="tutorials" class="screen">
+      <div class="header"><div class="h-left"><div class="h-back" data-action="nav" data-screen="profile"><i class="fas fa-arrow-left"></i></div><span style="font-size:17px;font-weight:700">Tutorials</span></div></div>
+      <div id="tutList" style="padding:16px"></div>
+    </div>
+
+    <!-- Follow Us screen -->
+    <div id="followUs" class="screen">
+      <div class="header"><div class="h-left"><div class="h-back" data-action="nav" data-screen="profile"><i class="fas fa-arrow-left"></i></div><span style="font-size:17px;font-weight:700">Follow Us</span></div></div>
+      <div id="followList" style="padding:16px"></div>
+    </div>
+
+    <!-- Legal screen -->
+    <div id="legal" class="screen">
+      <div class="header"><div class="h-left"><div class="h-back" data-action="nav" data-screen="profile"><i class="fas fa-arrow-left"></i></div><span style="font-size:17px;font-weight:700">Legal</span></div></div>
+      <div style="padding:16px">
+        <div class="pm-item" data-action="openPolicy" data-policy="terms"><div class="pm-label">Terms & Conditions</div><i class="fas fa-chevron-right pm-arrow"></i></div>
+        <div class="pm-item" data-action="openPolicy" data-policy="privacy"><div class="pm-label">Privacy Policy</div><i class="fas fa-chevron-right pm-arrow"></i></div>
+        <div class="pm-item" data-action="openPolicy" data-policy="refund"><div class="pm-label">Refund Policy</div><i class="fas fa-chevron-right pm-arrow"></i></div>
+      </div>
+    </div>
+
+    <!-- Policy Viewer screen -->
+    <div id="policyView" class="screen">
+      <div class="header"><div class="h-left"><div class="h-back" data-action="nav" data-screen="legal"><i class="fas fa-arrow-left"></i></div><span id="policyTitle" style="font-size:17px;font-weight:700">Policy</span></div></div>
+      <div id="policyContent" style="padding:16px;font-size:13px;color:var(--txt2);line-height:1.8"></div>
+    </div>
+
+    <!-- Edit Profile screen -->
+    <div id="editProfile" class="screen">
+      <div class="header"><div class="h-left"><div class="h-back" data-action="nav" data-screen="profile"><i class="fas fa-arrow-left"></i></div><span style="font-size:17px;font-weight:700">Edit Profile</span></div></div>
+      <div style="padding:24px 16px">
+        <div class="form-group"><label class="form-label">Full Name</label><input class="form-control" id="editName" placeholder="Your Name"></div>
+        <div class="form-group"><label class="form-label">Username</label><input class="form-control" id="editUsername" placeholder="username" oninput="this.value=this.value.replace(/[^a-zA-Z0-9_]/g,'').toLowerCase()"></div>
+        <div class="form-group"><label class="form-label">Phone</label><input class="form-control" id="editPhone" type="tel" placeholder="9876543210"></div>
+        <div class="form-group"><label class="form-label">Profile Picture URL</label><input class="form-control" id="editPic" placeholder="https://..."></div>
+        <button class="btn btn-primary btn-full" data-action="saveProfile"><i class="fas fa-save"></i> Save Changes</button>
+      </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav" id="bottomNav" style="display:none">
+      <div class="bn-item" data-action="nav" data-screen="earn"><i class="fas fa-coins"></i><span>Earn</span></div>
+      <div class="bn-item" data-action="nav" data-screen="leaderboard"><i class="fas fa-ranking-star"></i><span>Ranks</span></div>
+      <div class="bn-item active" data-action="nav" data-screen="home"><i class="fas fa-house"></i><span>Home</span></div>
+      <div class="bn-item" data-action="nav" data-screen="wallet"><i class="fas fa-wallet"></i><span>Wallet</span></div>
+      <div class="bn-item" data-action="nav" data-screen="profile"><i class="fas fa-user"></i><span>Profile</span></div>
+    </nav>
+  </div>
+
+  <!-- Modals -->
+  <div class="modal-overlay" id="addMoneyModal">
+    <div class="modal-box">
+      <div class="modal-drag"></div>
+      <div class="modal-hdr"><div class="modal-title"><i class="fas fa-credit-card"></i> Add Cash</div><div class="modal-close" data-action="closeModal" data-modal="addMoneyModal"><i class="fas fa-times"></i></div></div>
+      <div class="modal-body">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px" id="quickAmts">
+          <button class="btn btn-outline btn-sm" type="button" data-action="setAmt" data-amount="100">₹100</button>
+          <button class="btn btn-outline btn-sm" type="button" data-action="setAmt" data-amount="200">₹200</button>
+          <button class="btn btn-outline btn-sm" type="button" data-action="setAmt" data-amount="500">₹500</button>
+          <button class="btn btn-outline btn-sm" type="button" data-action="setAmt" data-amount="1000">₹1000</button>
+        </div>
+        <div class="form-group"><label class="form-label">Amount (₹)</label><input class="form-control" id="addAmt" type="number" placeholder="Enter amount" min="10"></div>
+        <p style="font-size:11px;color:var(--txt3);margin-bottom:16px"><i class="fas fa-info-circle" style="color:var(--primary);margin-right:4px"></i>Minimum deposit: <span id="minDepositLbl">₹10</span>. Instant credit via ZapUPI.</p>
+        <button class="btn btn-primary btn-full" data-action="processPayment"><i class="fas fa-lock"></i> Proceed to Payment</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="withdrawModal">
+    <div class="modal-box">
+      <div class="modal-drag"></div>
+      <div class="modal-hdr"><div class="modal-title"><i class="fas fa-arrow-up"></i> Withdraw</div><div class="modal-close" data-action="closeModal" data-modal="withdrawModal"><i class="fas fa-times"></i></div></div>
+      <div class="modal-body">
+        <div style="background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);border-radius:var(--r-xs);padding:12px;margin-bottom:16px;font-size:12px;color:var(--txt2)"><i class="fas fa-info-circle" style="color:var(--primary);margin-right:6px"></i>Only <b>Winning Balance</b> can be withdrawn. Available: <b id="availWithdraw" style="color:var(--primary)">₹0</b></div>
+        <div class="form-group"><label class="form-label">Amount (₹)</label><input class="form-control" id="wdAmt" type="number" placeholder="Min ₹100"></div>
+        <div class="form-group"><label class="form-label">UPI ID</label><input class="form-control" id="wdUpi" placeholder="name@upi"></div>
+        <div class="form-group"><label class="form-label">Account Name</label><input class="form-control" id="wdName" placeholder="Your Name"></div>
+        <button class="btn btn-primary btn-full" data-action="processWithdrawal"><i class="fas fa-paper-plane"></i> Request Withdrawal</button>
+        <p style="font-size:11px;color:var(--txt3);text-align:center;margin-top:10px">Processed within 24 hours</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="joinModal">
+    <div class="modal-box">
+      <div class="modal-drag"></div>
+      <div class="modal-hdr"><div class="modal-title" id="joinModalTitle">Join Tournament</div><div class="modal-close" data-action="closeModal" data-modal="joinModal"><i class="fas fa-times"></i></div></div>
+      <div class="modal-body">
+        <div style="background:var(--card-lt);border-radius:var(--r-sm);padding:14px;margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--txt3);font-size:13px">Entry Fee</span><span style="font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:var(--accent)" id="joinFeeDisp">₹0</span></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--txt3);font-size:13px">Your Balance</span><span style="font-size:14px;font-weight:600;color:var(--primary)" id="joinBalDisp">₹0</span></div>
+          <div style="border-top:1px solid var(--border);padding-top:8px;display:flex;justify-content:space-between"><span style="color:var(--txt2);font-size:13px;font-weight:600">After Join</span><span style="font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700" id="joinAfterDisp">₹0</span></div>
+        </div>
+        <div class="form-group"><label class="form-label">Game UID / In-Game Name</label><input class="form-control" id="joinUid" placeholder="Your Game UID"></div>
+        <button class="btn btn-primary btn-full" id="joinConfirmBtn" data-action="confirmJoin"><i class="fas fa-check"></i> Confirm & Join</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lucky draw result -->
+  <div id="ldResult" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);flex-direction:column;align-items:center;justify-content:center;z-index:2000;text-align:center;padding:30px">
+    <div style="font-size:60px;margin-bottom:16px" id="ldResultIcon">🎉</div>
+    <div style="font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;margin-bottom:8px" id="ldResultTitle">You Won!</div>
+    <div style="font-size:16px;color:var(--txt2);margin-bottom:24px" id="ldResultMsg">Congratulations</div>
+    <button class="btn btn-primary" data-action="closeLdResult">Awesome! <i class="fas fa-gamepad"></i></button>
+  </div>
+
+  <!-- App JS (order matters) -->
+  <script src="js/firebase.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/home.js"></script>
+  <script src="js/tournaments.js"></script>
+  <script src="js/wallet.js"></script>
+  <script src="js/leaderboard.js"></script>
+  <script src="js/earn.js"></script>
+  <script src="js/profile.js"></script>
+  <script src="js/notifications.js"></script>
+  <script src="js/support.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

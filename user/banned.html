@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <title>GRINDX — Account Banned</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+</head>
+<body>
+  <div class="banned-wrap">
+    <div class="banned-icon"><i class="fas fa-ban"></i></div>
+    <div class="banned-title">Account Banned</div>
+    <div class="banned-desc">Your account has been suspended.</div>
+    <div class="banned-reason" id="banReason">Violation of terms</div>
+    <button class="btn btn-danger" id="logoutBtn"><i class="fas fa-right-from-bracket"></i> Logout</button>
+  </div>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDZ_yzyejcKkHx_6NB1gaEYfCB2fxyoeJM",
+      authDomain: "grindx-officalz.firebaseapp.com",
+      databaseURL: "https://grindx-officalz-default-rtdb.firebaseio.com",
+      projectId: "grindx-officalz",
+      storageBucket: "grindx-officalz.firebasestorage.app",
+      messagingSenderId: "686976018871",
+      appId: "1:686976018871:web:fe06a9ca83dbd241142032"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // Show ban reason from URL param
+    const params = new URLSearchParams(window.location.search);
+    const reason = params.get('reason');
+    if (reason) document.getElementById('banReason').textContent = decodeURIComponent(reason);
+
+    // Logout button
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await auth.signOut();
+      window.location.href = 'index.html';
+    });
+
+    // If not banned, redirect away
+    auth.onAuthStateChanged(async user => {
+      if (!user) { window.location.href = 'index.html'; return; }
+      const db = firebase.database();
+      const snap = await db.ref('users/' + user.uid).once('value');
+      if (snap.exists() && snap.val().status !== 'banned') {
+        window.location.href = 'index.html';
+      }
+    });
+  </script>
+</body>
+</html>
