@@ -15,28 +15,52 @@ function renderTournaments() {
   const { sliced, totalPages } = paginate(list, 'tours');
   const tb = document.getElementById('toursTbody');
   if (!sliced.length) {
-    tb.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--txt3)">No tournaments found</td></tr>';
+    tb.innerHTML = '<div class="tour-empty"><i class="fas fa-trophy"></i><p>No tournaments found</p></div>';
   } else {
-    const statusBadge = { upcoming:'badge-yellow', live:'badge-green', completed:'badge-blue', cancelled:'badge-red' };
-    tb.innerHTML = sliced.map(t => `
-      <tr>
-        <td><div style="font-weight:700;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(t.name||'—')}</div></td>
-        <td>${escapeHtml(t.gameId||'—')}</td>
-        <td><span class="badge badge-purple">${escapeHtml(t.matchType||'Solo')}</span></td>
-        <td>${t.entryFee ? '₹'+t.entryFee : '<span class="text-green">Free</span>'}</td>
-        <td style="font-weight:700;color:var(--p)">₹${getTotalPrize(t)}</td>
-        <td>${t.joinedCount||0}/${t.slots||0}</td>
-        <td style="font-size:12px;color:var(--txt2);white-space:nowrap">${formatDate(t.time)}</td>
-        <td><span class="badge ${statusBadge[t.status]||'badge-blue'}">${t.status||'—'}</span></td>
-        <td>
-          <div style="display:flex;gap:5px;flex-wrap:wrap">
-            <button class="btn btn-outline btn-xs" data-action="editTournament" data-id="${t.id}"><i class="fas fa-edit"></i></button>
-            <button class="btn btn-success btn-xs" data-action="openParticipants" data-id="${t.id}"><i class="fas fa-users"></i></button>
-            ${t.status==='upcoming'||t.status==='live' ? `<button class="btn btn-warn btn-xs" data-action="openResultModal" data-id="${t.id}"><i class="fas fa-flag-checkered"></i></button>` : ''}
+    const statusColor = { upcoming:'#facc15', live:'#4ade80', completed:'#60a5fa', cancelled:'#f87171' };
+    const typeColor   = { Solo:'#a78bfa', Duo:'#34d399', Squad:'#fb923c' };
+    tb.innerHTML = sliced.map(t => {
+      const prize = getTotalPrize(t);
+      const slotsLeft = (t.slots||0) - (t.joinedCount||0);
+      const pct = t.slots ? Math.round((t.joinedCount||0)/t.slots*100) : 0;
+      return `
+      <div class="tour-card">
+        <div class="tour-card-banner" style="background-image:url('${t.banner||''}')">
+          ${t.banner ? '' : '<div class="tour-card-banner-placeholder"><i class="fas fa-trophy"></i></div>'}
+          <div class="tour-card-badges">
+            <span class="tour-badge" style="background:${typeColor[t.matchType]||'#a78bfa'}">${escapeHtml(t.matchType||'Solo')}</span>
+            ${t.gameId ? `<span class="tour-badge" style="background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.2)">${escapeHtml(t.gameId)}</span>` : ''}
+          </div>
+          <div class="tour-card-status" style="background:${statusColor[t.status]||'#60a5fa'};color:#000">${(t.status||'upcoming').toUpperCase()}</div>
+        </div>
+        <div class="tour-card-body">
+          <div class="tour-card-title">${escapeHtml(t.name||'—')}</div>
+          <div class="tour-card-time"><i class="fas fa-clock"></i> ${formatDate(t.time)}</div>
+          <div class="tour-card-stats">
+            <div class="tour-stat">
+              <div class="tour-stat-label">PRIZE POOL</div>
+              <div class="tour-stat-val" style="color:var(--p)">₹${prize}</div>
+            </div>
+            <div class="tour-stat">
+              <div class="tour-stat-label">ENTRY</div>
+              <div class="tour-stat-val">${t.entryFee ? '₹'+t.entryFee : '<span style="color:#4ade80">FREE</span>'}</div>
+            </div>
+            ${t.perKill ? `<div class="tour-stat"><div class="tour-stat-label">PER KILL</div><div class="tour-stat-val">₹${t.perKill}</div></div>` : ''}
+          </div>
+          <div class="tour-slots-row">
+            <span style="font-size:11px;color:var(--txt3)">${t.joinedCount||0}/${t.slots||0} joined</span>
+            <span style="font-size:11px;color:${slotsLeft<=5?'#f87171':'var(--txt3)'}">${slotsLeft} left</span>
+          </div>
+          <div class="tour-progress"><div class="tour-progress-fill" style="width:${pct}%"></div></div>
+          <div class="tour-card-actions">
+            <button class="btn btn-outline btn-xs" data-action="editTournament" data-id="${t.id}"><i class="fas fa-edit"></i> Edit</button>
+            <button class="btn btn-success btn-xs" data-action="openParticipants" data-id="${t.id}"><i class="fas fa-users"></i> Players</button>
+            ${t.status==='upcoming'||t.status==='live' ? `<button class="btn btn-warn btn-xs" data-action="openResultModal" data-id="${t.id}"><i class="fas fa-flag-checkered"></i> Results</button>` : ''}
             ${t.status!=='cancelled'&&t.status!=='completed' ? `<button class="btn btn-danger btn-xs" data-action="openCancelTour" data-id="${t.id}"><i class="fas fa-ban"></i></button>` : ''}
           </div>
-        </td>
-      </tr>`).join('');
+        </div>
+      </div>`;
+    }).join('');
   }
   renderPagination('tours', totalPages);
 }

@@ -3,6 +3,11 @@
 async function loadSettings() {
   const snap = await db.ref('settings').once('value');
   const s = snap.val() || {};
+  // Payment mode
+  document.getElementById('paymentMode').value = s.paymentMode || 'gateway';
+  document.getElementById('manualUpiId').value = s.manualUpiId || '';
+  document.getElementById('manualUpiName').value = s.manualUpiName || 'GrindX Payments';
+  toggleManualUpiWrap(s.paymentMode || 'gateway');
   document.getElementById('backendUrl').value = s.backendUrl || '';
   document.getElementById('maintToggle').checked = s.maintenance || false;
   document.getElementById('maintMsg').value = s.maintenanceMsg || '';
@@ -30,9 +35,22 @@ async function loadSettings() {
   document.getElementById('policyContent').value = ps[currentPolicyTab] || '';
 }
 
+function toggleManualUpiWrap(mode) {
+  const show = mode === 'manual' || mode === 'both';
+  document.getElementById('manualUpiWrap').style.display = show ? 'block' : 'none';
+}
+
 async function saveSetting(type) {
   try {
     switch (type) {
+      case 'paymentMode': {
+        const mode = document.getElementById('paymentMode').value;
+        const upiId = document.getElementById('manualUpiId').value.trim();
+        const upiName = document.getElementById('manualUpiName').value.trim();
+        if ((mode === 'manual' || mode === 'both') && !upiId) return toast('Enter UPI ID', 'error');
+        await db.ref('settings').update({ paymentMode: mode, manualUpiId: upiId, manualUpiName: upiName || 'GrindX Payments' });
+        break;
+      }
       case 'backendUrl': {
         const url = document.getElementById('backendUrl').value.trim().replace(/\/$/, '');
         if (!url) return toast('Enter a valid URL', 'error');

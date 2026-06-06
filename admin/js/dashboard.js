@@ -6,6 +6,8 @@ function loadAllData() {
     allUsers = [];
     if (snap.exists()) snap.forEach(u => allUsers.push({ id: u.key, ...u.val() }));
     updateDashboardStats();
+    // Re-render users page if currently visible
+    if (document.getElementById('page-users')?.classList.contains('active')) renderUsers();
   });
   // Tournaments
   db.ref('tournaments').on('value', snap => {
@@ -13,6 +15,7 @@ function loadAllData() {
     if (snap.exists()) snap.forEach(t => allTours.push({ id: t.key, ...t.val() }));
     allTours.sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
     updateDashboardStats();
+    if (document.getElementById('page-tournaments')?.classList.contains('active')) renderTournaments();
   });
   // Withdrawals
   db.ref('withdrawals').on('value', snap => {

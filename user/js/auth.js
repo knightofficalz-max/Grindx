@@ -1,12 +1,19 @@
 // GrindX — user/js/auth.js
 // ═══════════════ AUTH ═══════════════
+let googleAuthInProgress = false;
+
 // Handle Google redirect result (mobile flow)
 auth.getRedirectResult().then(result => {
-  if (result.user) handleGoogleResult(result.user);
+  if (result.user) {
+    googleAuthInProgress = true;
+    handleGoogleResult(result.user);
+  }
 }).catch(e => { if (e && e.message) toast(e.message, 'error'); });
 
 auth.onAuthStateChanged(async user => {
   if (user) {
+    // If Google auth is handling navigation, don't interfere
+    if (googleAuthInProgress) return;
     currentUser = user;
     loadUserData(user.uid);
     navigateTo('home');
@@ -115,16 +122,30 @@ async function doGoogleLogin() {
 }
 
 async function handleGoogleResult(user) {
-  const idToken = await user.getIdToken();
-  const BACKEND = await getBackend();
-  const res = await fetch(`${BACKEND}/api/google-auth`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + idToken },
-    body: JSON.stringify({})
-  });
-  const data = await res.json();
-  if (!data.success) throw new Error(data.error || 'Google auth failed');
-  if (data.isNew) { navigateTo('googleComplete'); return; }
-  toast('Welcome back!', 'success');
+  googleAuthInProgress = true;
+  try {
+    currentUser = user;
+    const idToken = await user.getIdToken();
+    const BACKEND = await getBackend();
+    const res = await fetch(`${BACKEND}/api/google-auth`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + idToken },
+      body: JSON.stringify({})
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Google auth failed');
+    if (data.isNew) {
+      loadUserData(user.uid);
+      navigateTo('googleComplete');
+    } else {
+      loadUserData(user.uid);
+      toast('Welcome back!', 'success');
+      navigateTo('home');
+    }
+  } catch(e) {
+    toast(e.message, 'error');
+  } finally {
+    googleAuthInProgress = false;
+  }
 }
 
 async function resetPassword() {

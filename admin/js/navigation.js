@@ -72,7 +72,8 @@ document.addEventListener('input', e => {
 // ═════ NAVIGATION ═════
 const pageTitles = {
   dashboard:'Dashboard', tournaments:'Tournaments', createTour:'Create Tournament',
-  users:'Users', deposits:'Deposits', withdrawals:'Withdrawals', transactions:'Transactions',
+  users:'Users', deposits:'Deposits', manualDeposits:'Manual Deposits',
+  withdrawals:'Withdrawals', transactions:'Transactions',
   notifications:'Notifications', banners:'Banners & Notes', games:'Games & Modes',
   tutorials:'Tutorials', settings:'Settings', logs:'Activity Logs'
 };
@@ -92,6 +93,7 @@ function showPage(id) {
   if (id === 'tournaments') renderTournaments();
   if (id === 'users') renderUsers();
   if (id === 'deposits') renderDeposits();
+  if (id === 'manualDeposits') loadManualDeposits();
   if (id === 'withdrawals') filterWithdrawals(wdFilterStatus);
   if (id === 'transactions') renderTxns();
   if (id === 'banners') loadBanners();

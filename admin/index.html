@@ -49,6 +49,7 @@
       <div class="sb-item" data-action="showPage" data-page="users"><i class="fas fa-users"></i> All Users</div>
       <div class="sb-section">Finance</div>
       <div class="sb-item" data-action="showPage" data-page="deposits"><i class="fas fa-arrow-down"></i> Deposits</div>
+      <div class="sb-item" data-action="showPage" data-page="manualDeposits"><i class="fas fa-qrcode"></i> Manual Deposits</div>
       <div class="sb-item" data-action="showPage" data-page="withdrawals"><i class="fas fa-arrow-up"></i> Withdrawals <span class="sb-badge" id="pendingWdBadge" style="display:none">0</span></div>
       <div class="sb-item" data-action="showPage" data-page="transactions"><i class="fas fa-receipt"></i> Transactions</div>
       <div class="sb-section">Content</div>
@@ -137,15 +138,8 @@
         </select>
         <button class="btn btn-primary btn-sm" data-action="showPage" data-page="createTour"><i class="fas fa-plus"></i> Create</button>
       </div>
-      <div class="card" style="padding:0">
-        <div class="tbl-wrap">
-          <table id="toursTable">
-            <thead><tr><th>Tournament</th><th>Game</th><th>Type</th><th>Entry</th><th>Prize</th><th>Slots</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="toursTbody"></tbody>
-          </table>
-        </div>
-        <div id="toursPagination" class="pagination"></div>
-      </div>
+      <div id="toursTbody" class="tour-cards-grid"></div>
+      <div id="toursPagination" class="pagination"></div>
     </div>
 
     <!-- ══ CREATE / EDIT TOURNAMENT ══ -->
@@ -154,15 +148,14 @@
         <h3 id="tourFormTitle">Create Tournament</h3>
         <button class="btn btn-outline btn-sm" data-action="showPage" data-page="tournaments"><i class="fas fa-arrow-left"></i> Back</button>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="tour-form-grid">
+        <!-- LEFT -->
         <div>
           <div class="card mb12">
             <div class="card-title">Basic Info</div>
             <div class="form-group"><label class="form-label">Tournament Name *</label><input class="form-control" id="tName" placeholder="e.g. Weekend Warriors #12"></div>
-            <div class="form-row">
-              <div class="form-group"><label class="form-label">Game *</label><select class="form-control" id="tGame"><option value="">Select Game</option></select></div>
-              <div class="form-group"><label class="form-label">Mode *</label><select class="form-control" id="tMode"><option value="">Select Mode</option></select></div>
-            </div>
+            <div class="form-group"><label class="form-label">Game *</label><select class="form-control" id="tGame"><option value="">Select Game</option></select></div>
+            <div class="form-group"><label class="form-label">Mode *</label><select class="form-control" id="tMode"><option value="">Select Mode</option></select></div>
             <div class="form-row">
               <div class="form-group"><label class="form-label">Match Type *</label>
                 <select class="form-control" id="tMatchType">
@@ -178,9 +171,9 @@
               <div class="form-group"><label class="form-label">Match Date & Time *</label><input class="form-control" id="tTime" type="datetime-local"></div>
             </div>
             <div class="form-group"><label class="form-label">Banner Image URL</label><input class="form-control" id="tBanner" placeholder="https://..."></div>
-            <div class="form-group"><label class="form-label">Rules</label><textarea class="form-control" id="tRules" placeholder="Tournament rules..."></textarea></div>
+            <div class="form-group"><label class="form-label">Rules</label><textarea class="form-control" id="tRules" rows="3" placeholder="Tournament rules..."></textarea></div>
           </div>
-          <div class="card">
+          <div class="card mb12">
             <div class="card-title">Room Details</div>
             <div class="form-row">
               <div class="form-group"><label class="form-label">Room ID</label><input class="form-control" id="tRoomId" placeholder="Room ID"></div>
@@ -188,6 +181,7 @@
             </div>
           </div>
         </div>
+        <!-- RIGHT -->
         <div>
           <div class="card mb12">
             <div class="card-title">Prize Distribution</div>
@@ -195,7 +189,7 @@
             <div class="flex-between mt12">
               <span style="font-size:12px;color:var(--txt3)">Positions: <span id="prizeCount">0</span></span>
               <div style="display:flex;gap:8px">
-                <button class="btn btn-outline btn-sm" data-action="addPrizeRow"><i class="fas fa-plus"></i> Add Position</button>
+                <button class="btn btn-outline btn-sm" data-action="addPrizeRow"><i class="fas fa-plus"></i> Add</button>
                 <button class="btn btn-danger btn-sm" data-action="removePrizeRow"><i class="fas fa-minus"></i></button>
               </div>
             </div>
@@ -266,6 +260,28 @@
           </table>
         </div>
         <div id="depositsPagination" class="pagination"></div>
+      </div>
+    </div>
+
+    <!-- ══ MANUAL DEPOSITS ══ -->
+    <div class="page" id="page-manualDeposits">
+      <div class="filter-row">
+        <div class="search-bar"><i class="fas fa-search"></i><input id="manualDepSearch" placeholder="Search by user, UTR..." data-action="filter" data-table="manualDeps"></div>
+        <select class="form-control" style="width:130px" id="manualDepStatusFilter" data-action="filter" data-table="manualDeps">
+          <option value="">All</option>
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+      <div class="card" style="padding:0">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Ref ID</th><th>User</th><th>Amount</th><th>UTR</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody id="manualDepTbody"></tbody>
+          </table>
+        </div>
+        <div id="manualDepsPagination" class="pagination"></div>
       </div>
     </div>
 
@@ -437,6 +453,28 @@
     <div class="page" id="page-settings">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
         <div>
+          <div class="card mb12">
+            <div class="card-title">Payment Method</div>
+            <div class="form-group">
+              <label class="form-label">Active Payment Mode</label>
+              <select class="form-control" id="paymentMode" onchange="toggleManualUpiWrap(this.value)">
+                <option value="gateway">Payment Gateway (ZapUPI)</option>
+                <option value="manual">Manual UPI</option>
+                <option value="both">Both (User can choose)</option>
+              </select>
+            </div>
+            <div id="manualUpiWrap">
+              <div class="form-group">
+                <label class="form-label">UPI ID</label>
+                <input class="form-control" id="manualUpiId" placeholder="yourname@upi">
+              </div>
+              <div class="form-group">
+                <label class="form-label">UPI Name (displayed to user)</label>
+                <input class="form-control" id="manualUpiName" placeholder="GrindX Payments">
+              </div>
+            </div>
+            <button class="btn btn-primary btn-sm" data-action="saveSetting" data-setting="paymentMode"><i class="fas fa-save"></i> Save Payment Settings</button>
+          </div>
           <div class="card mb12">
             <div class="card-title">Backend / API URL</div>
             <div class="form-group">
@@ -649,6 +687,7 @@
 <script src="js/navigation.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/dashboard.js"></script>
+<script src="js/manualdeposits.js"></script>
 <script src="js/tournaments.js"></script>
 <script src="js/users.js"></script>
 <script src="js/deposits.js"></script>
